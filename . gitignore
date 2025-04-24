@@ -1,0 +1,21 @@
+# Node modules
+node_modules/
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+.cache/
+dist/
+
+# Puppeteer cache (to avoid storing Chromium binary)
+puppeteer/
+puppeteer_cache/
+
+# Environment files
+.env
+
+# VS Code settings (optional)
+.vscode
