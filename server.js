@@ -18,10 +18,12 @@ app.get("/api/pinterest", async (req, res) => {
         // Launch Puppeteer with auto-downloaded Chromium
         const browser = await puppeteer.launch({
             headless: "new",
-            args: ["--no-sandbox", "--disable-setuid-sandbox"]
+            args: ["--no-sandbox", "--disable-setuid-sandbox"],
+            defaultViewport: null
         });
 
         const page = await browser.newPage();
+        await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36"); // Mimics a real browser
         await page.goto(`https://www.pinterest.com/search/pins/?q=${encodeURIComponent(searchQuery)}`, {
             waitUntil: "domcontentloaded",
         });
