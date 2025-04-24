@@ -1,4 +1,3 @@
-
 {
   "name": "pinterest-api",
   "version": "1.0.0",
@@ -6,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "build": "npm install && npx puppeteer-core install"
+    "build": "npm install --force && npx puppeteer-core install"
   },
   "dependencies": {
     "express": "^4.18.2",
@@ -16,6 +15,6 @@
   "engines": {
     "node": "18.x"
   },
-  "author": "Ayanfe",
+  "author": "Your Name",
   "license": "MIT"
 }
