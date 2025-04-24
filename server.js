@@ -1,11 +1,11 @@
 const express = require("express");
-const puppeteer = require("puppeteer");
+const puppeteer = require("puppeteer-core");
 const cors = require("cors");
 const path = require("path");
 
 const app = express();
 app.use(cors());
-app.use(express.static(path.join(__dirname, "public"))); // Serves `index.html`
+app.use(express.static(path.join(__dirname, "public"))); // Serves index.html
 
 app.get("/api/pinterest", async (req, res) => {
     const searchQuery = req.query.q;
@@ -18,9 +18,10 @@ app.get("/api/pinterest", async (req, res) => {
         const browser = await puppeteer.launch({
             headless: "new",
             args: ["--no-sandbox", "--disable-setuid-sandbox"],
+            executablePath: "/usr/bin/google-chrome" // Ensures Puppeteer uses system Chrome
         });
-        const page = await browser.newPage();
 
+        const page = await browser.newPage();
         await page.goto(`https://www.pinterest.com/search/pins/?q=${encodeURIComponent(searchQuery)}`, {
             waitUntil: "networkidle2",
         });
@@ -37,7 +38,7 @@ app.get("/api/pinterest", async (req, res) => {
     }
 });
 
-// Handles frontend requests
+// Serves the frontend test page
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
 });
