@@ -1,9 +1,11 @@
 const express = require("express");
 const puppeteer = require("puppeteer");
 const cors = require("cors");
+const path = require("path");
 
 const app = express();
 app.use(cors());
+app.use(express.static(path.join(__dirname, "public"))); // Serves `index.html`
 
 app.get("/api/pinterest", async (req, res) => {
     const searchQuery = req.query.q;
@@ -33,6 +35,11 @@ app.get("/api/pinterest", async (req, res) => {
         console.error("Scraping error:", error);
         res.status(500).json({ error: "Failed to fetch images." });
     }
+});
+
+// Handles frontend requests
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 const PORT = process.env.PORT || 8080;
