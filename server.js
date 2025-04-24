@@ -6,7 +6,7 @@ require("dotenv").config();
 const app = express();
 app.use(cors());
 
-const PEXELS_API_KEY = process.env.PEXELS_API_KEY; // Store API key in env file
+const PEXELS_API_KEY = process.env.PEXELS_API_KEY; // Load API key from .env file
 
 app.get("/api/pexels", async (req, res) => {
     const searchQuery = req.query.q;
