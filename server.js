@@ -1,13 +1,14 @@
 const express = require("express");
-const puppeteer = require("puppeteer-core");
+const axios = require("axios");
 const cors = require("cors");
-const path = require("path");
+require("dotenv").config();
 
 const app = express();
 app.use(cors());
-app.use(express.static(path.join(__dirname, "public"))); // Serves frontend
 
-app.get("/api/pinterest", async (req, res) => {
+const PEXELS_API_KEY = process.env.PEXELS_API_KEY; // Store API key in env file
+
+app.get("/api/pexels", async (req, res) => {
     const searchQuery = req.query.q;
 
     if (!searchQuery) {
@@ -15,37 +16,22 @@ app.get("/api/pinterest", async (req, res) => {
     }
 
     try {
-        // Launch Puppeteer with auto-downloaded Chromium
-        const browser = await puppeteer.launch({
-            headless: "new",
-            args: ["--no-sandbox", "--disable-setuid-sandbox"],
-            defaultViewport: null
+        const response = await axios.get("https://api.pexels.com/v1/search", {
+            params: { query: searchQuery, per_page: 10 },
+            headers: { Authorization: PEXELS_API_KEY }
         });
 
-        const page = await browser.newPage();
-        await page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36"); // Mimics a real browser
-        await page.goto(`https://www.pinterest.com/search/pins/?q=${encodeURIComponent(searchQuery)}`, {
-            waitUntil: "domcontentloaded",
-        });
+        const images = response.data.photos.map(photo => ({
+            url: photo.src.original,
+            photographer: photo.photographer
+        }));
 
-        await page.waitForSelector("img", { timeout: 5000 }); // Ensures images load
-
-        const images = await page.evaluate(() => {
-            return Array.from(document.querySelectorAll("img")).map(img => img.src);
-        });
-
-        await browser.close();
         res.json({ results: images });
     } catch (error) {
-        console.error("Scraping error:", error);
-        res.status(500).json({ error: "Failed to fetch images. Pinterest may be blocking requests." });
+        console.error("API error:", error);
+        res.status(500).json({ error: "Failed to fetch images from Pexels." });
     }
 });
 
-// Serves the frontend test page
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "index.html"));
-});
-
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`✅ Pinterest API running at http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`✅ Pexels API running at http://localhost:${PORT}`));
