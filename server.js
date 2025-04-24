@@ -5,7 +5,7 @@ const path = require("path");
 
 const app = express();
 app.use(cors());
-app.use(express.static(path.join(__dirname, "public"))); // Serves index.html
+app.use(express.static(path.join(__dirname, "public"))); // Serves frontend
 
 app.get("/api/pinterest", async (req, res) => {
     const searchQuery = req.query.q;
@@ -15,16 +15,18 @@ app.get("/api/pinterest", async (req, res) => {
     }
 
     try {
+        // Launch Puppeteer with auto-downloaded Chromium
         const browser = await puppeteer.launch({
             headless: "new",
-            args: ["--no-sandbox", "--disable-setuid-sandbox"],
-            executablePath: "/usr/bin/google-chrome" // Ensures Puppeteer uses system Chrome
+            args: ["--no-sandbox", "--disable-setuid-sandbox"]
         });
 
         const page = await browser.newPage();
         await page.goto(`https://www.pinterest.com/search/pins/?q=${encodeURIComponent(searchQuery)}`, {
-            waitUntil: "networkidle2",
+            waitUntil: "domcontentloaded",
         });
+
+        await page.waitForSelector("img", { timeout: 5000 }); // Ensures images load
 
         const images = await page.evaluate(() => {
             return Array.from(document.querySelectorAll("img")).map(img => img.src);
@@ -34,7 +36,7 @@ app.get("/api/pinterest", async (req, res) => {
         res.json({ results: images });
     } catch (error) {
         console.error("Scraping error:", error);
-        res.status(500).json({ error: "Failed to fetch images." });
+        res.status(500).json({ error: "Failed to fetch images. Pinterest may be blocking requests." });
     }
 });
 
